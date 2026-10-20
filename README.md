@@ -129,9 +129,22 @@ UX friction, bug, confusion, unexpected use). A session is kept above 0.5.
 What you gain is a probability you can threshold and sort by, instead of a
 yes/no a chat model chose. What you lose is the key lines: a decision model
 cites nothing, so the analysis gets no hint of where to look (it does not need
-one). Jev's cost here is estimated, not measured: about the same as Mercury,
-from [another project's](https://github.com/DuvInc/jev-table-import-mapper)
-measured runs. Run `triage --dry-run` and a pilot of ten before trusting it.
+one).
+
+Measured on 10 sessions that Mercury had already triaged (2026-10-20):
+
+| | Mercury (chat) | jev 1.13 (decision) |
+| :--- | :--- | :--- |
+| Cost for 10 sessions | ~$0.0010 | $0.0009 |
+| Time for 10, five at a time | | 1.5 s |
+| Kept the 6 Mercury kept | 6 | 6 |
+| Dropped the 2 with too little activity | 2 | 2 (worth 0.15 and 0.34) |
+| The 2 Mercury called "smooth" | dropped | kept (worth 0.65 and 0.72) |
+
+On those last two, the analysis had found English copy in a German interface in
+one, and a possible language mix-up in the other: on this sample, the decision
+model was at least as good a filter. Ten sessions is a pilot, not a benchmark:
+run your own `triage --dry-run` and a pilot of ten before choosing.
 
 ## Try it locally
 
