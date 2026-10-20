@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+
+# Real keys, for .env.example. Both spend or read real data.
+.env
+.env.*
+!.env.example
+
+# Everything `replays` writes: recordings, timelines, reports. They describe what
+# real people did in your product, so they never belong in a repository, this
+# one or yours. Keep them on your machine, or point --out somewhere outside.
+replays-out/
+replays.config.json
+
+# Editor and agent tooling. The skill lives in `skills/`, which is committed.
+.vscode/
+.idea/
+.claude/

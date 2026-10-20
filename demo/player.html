@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session replay</title>
+<!-- Written by `replays player <id>`, which inlines the decoded events below.
+     For the moments a timeline leaves unclear: look, then go back to reading.
+     goto("HH:MM:SS") in the console jumps to a UTC time; start playing a couple of
+     seconds before it, because a jump does not replay animations and an animated
+     element can show as blank until it plays. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.4/dist/style.css">
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; padding: 16px; background: #1f1f1f; display: flex; justify-content: center; font: 14px system-ui, sans-serif; color: #ddd; }
+</style>
+</head>
+<body>
+<div id="player"></div>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@1.0.0-alpha.4/dist/index.js"></script>
+<script>
+  const events = /*EVENTS*/[];
+  const meta = events.find((e) => e.type === 4)?.data ?? {};
+  const width = Math.min(meta.width || 1024, window.innerWidth - 32);
+  const height = Math.round(width * ((meta.height || 768) / (meta.width || 1024)));
+  window.player = new rrwebPlayer({
+    target: document.getElementById("player"),
+    props: { events, width, height, autoPlay: false, showController: true, mouseTail: true },
+  });
+  const t0 = events[0]?.timestamp ?? 0;
+  window.goto = (hhmmss) => {
+    const [h, m, s] = hhmmss.split(":").map(Number);
+    const d = new Date(t0);
+    player.goto(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), h, m, s) - t0, false);
+  };
+</script>
+</body>
+</html>

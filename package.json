@@ -1,0 +1,25 @@
+{
+  "name": "posthog-replay-review",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Find out why people leave your product: PostHog session replays turned into readable timelines in code, then reviewed by a fast model and a cheap one, about $0.0003 a session.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "bin": {
+    "replays": "./bin/replays.mjs"
+  },
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./rrweb": "./lib/rrweb.mjs",
+    "./posthog": "./lib/posthog.mjs",
+    "./review": "./lib/review.mjs",
+    "./llm": "./lib/llm.mjs"
+  },
+  "scripts": {
+    "replays": "node bin/replays.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

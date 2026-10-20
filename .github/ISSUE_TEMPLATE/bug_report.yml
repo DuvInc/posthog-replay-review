@@ -1,0 +1,36 @@
+name: Bug report
+description: Something does not work the way this repository says it does.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, and what you got.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: lines
+    attributes:
+      label: The timeline lines, if this is a digest problem
+      description: >
+        The few lines around the problem are usually enough. Replace anything a
+        person typed or saw that could identify them. Never attach a raw
+        recording: it is a copy of what a real person did in your product.
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: Commit, Node version, PostHog cloud region or self-hosted version, models
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before filing
+      options:
+        - label: My paste contains no API key.
+          required: true
+        - label: My paste contains no real recording or personal data.
+          required: true

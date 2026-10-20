@@ -1,0 +1,33 @@
+name: CI
+
+# Pull requests only get the default read-only token, and nothing here needs
+# more. No secret is referenced, and `pull_request` (never
+# `pull_request_target`) means a fork's code cannot reach one.
+#
+# What CI does NOT do: talk to PostHog or to a model. Both need keys, one costs
+# money, and the tests cover the parts that decide what a review says: the
+# rrweb digest, the scoring, the budget guard and the report.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - run: npm test
+      # The CLI loads its modules lazily per command; a syntax error in one is
+      # otherwise found by the first person following the README.
+      - run: node --check bin/replays.mjs && node bin/replays.mjs

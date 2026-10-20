@@ -1,0 +1,19 @@
+{
+  "product": "Acme Docs: a SaaS that turns uploaded PDFs into searchable knowledge bases. Free plan: 3 documents. Paid: a monthly plan, or one-time credit packs.",
+  "startUrlMatch": "^https://app\\.acme-docs\\.example",
+  "days": 7,
+  "minActiveSeconds": 15,
+  "signals": {
+    "$rageclick": 3,
+    "$exception": 2,
+    "upgrade_prompt_viewed": 2,
+    "checkout_started": 2,
+    "checkout_abandoned": 3,
+    "account_deleted": 4,
+    "signup_completed": 1
+  },
+  "goals": ["checkout_completed", "document_indexed"],
+  "goalWeight": -2,
+  "consoleErrorWeight": 2,
+  "eventProperties": ["plan", "trigger", "credits_needed", "credits_balance"]
+}
