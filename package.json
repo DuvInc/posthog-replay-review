@@ -16,7 +16,8 @@
     "./rrweb": "./lib/rrweb.mjs",
     "./posthog": "./lib/posthog.mjs",
     "./review": "./lib/review.mjs",
-    "./llm": "./lib/llm.mjs"
+    "./llm": "./lib/llm.mjs",
+    "./jev": "./lib/jev.mjs"
   },
   "scripts": {
     "replays": "node bin/replays.mjs",

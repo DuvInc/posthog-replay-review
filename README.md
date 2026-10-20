@@ -76,6 +76,63 @@ The design decision that matters most is that **code produces every fact and the
 model only judges**. A model asked to summarise a session writes a fluent story;
 a model asked to cite line numbers can be checked, line by line, by code.
 
+## Who reads the timelines: your agent, or models you outsource to
+
+The two free steps already give you something to act on: numbered, redacted
+timelines in `replays-out/timelines/`. What reads them is your choice.
+
+**Your coding agent, no API key.** Claude Code, Cursor or Codex can read a
+timeline as well as a small model can, and
+[`skills/posthog-replay-review/SKILL.md`](skills/posthog-replay-review/SKILL.md)
+tells it how. That is the right setup for ten or twenty sessions, or to check
+what the models said. It does not scale: a hundred timelines is about 300,000
+tokens of reading in your agent's context, at your agent's price.
+
+**Outsourced to small models, to be efficient and to scale.** The two paid
+steps send each timeline to a model through an API, in parallel, with a
+schema, so the answer is structured and checkable. 136 sessions cost $0.04.
+Your agent then reads the report, not
+the 136 timelines. To set it up with [OpenRouter](https://openrouter.ai), which
+gives one key for every model below:
+
+1. Create a key at https://openrouter.ai/settings/keys. Give it a credit limit
+   (a dollar is plenty to start): the key cannot spend past it whatever runs.
+2. Add a few dollars of credit at https://openrouter.ai/settings/credits.
+3. Put it in `.env` as `OPENROUTER_API_KEY`. The key is read at call time by
+   `lib/llm.mjs` and `lib/jev.mjs` only.
+4. Run every paid step with `--dry-run` first, then with `--max-usd`.
+
+Any other OpenAI-compatible gateway works too (`LLM_BASE_URL`, `LLM_API_KEY`),
+as long as its models accept a JSON schema in `response_format`.
+
+### Pick the models
+
+Set them in `replays.config.json` (`triageModel`, `analysisModel`) or with
+`--triage-model`.
+
+| Step | Default | What it is | Alternatives |
+| :--- | :--- | :--- | :--- |
+| Triage: is this session worth a look? | `inception/mercury-2.5` | a fast diffusion chat model, strict JSON schema, picks the key lines | **a decision model**: `typesafe/jev-1.13` |
+| Analysis: what happened, what to fix | `openai/gpt-6-luna` on the flex tier | a cheap chat model, half price on flex | any chat model that takes a JSON schema |
+
+**Triage is a decision, so you can give it to a decision model.** Instead of a
+chat model writing JSON, a decision model like TypeSafe's jev, served through
+OpenRouter's decisions endpoint, answers typed yes/no questions with a
+probability, in one call. `lib/jev.mjs` sends each timeline as the state and
+asks six of them: worth a closer look, and one per category (blocked by price,
+UX friction, bug, confusion, unexpected use). A session is kept above 0.5.
+
+```json
+{ "triageModel": "typesafe/jev-1.13" }
+```
+
+What you gain is a probability you can threshold and sort by, instead of a
+yes/no a chat model chose. What you lose is the key lines: a decision model
+cites nothing, so the analysis gets no hint of where to look (it does not need
+one). Jev's cost here is estimated, not measured: about the same as Mercury,
+from [another project's](https://github.com/DuvInc/jev-table-import-mapper)
+measured runs. Run `triage --dry-run` and a pilot of ten before trusting it.
+
 ## Try it locally
 
 ```bash

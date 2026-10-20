@@ -17,6 +17,7 @@ import {
   analyze,
   buildTimeline,
   createCompleter,
+  createJevCompleter,
   createPostHogClient,
   decodeSnapshots,
   renderReport,
@@ -188,6 +189,10 @@ async function runStage(stage) {
   const maxUsd = args["max-usd"] !== undefined ? Number(args["max-usd"]) : undefined;
   const dryRun = Boolean(args["dry-run"]);
   const complete = createCompleter();
+  // A decision model for triage: `"triageModel": "typesafe/jev-1.13"` in the
+  // config, or --triage-model. Analysis always needs a chat model.
+  const triageModel = args["triage-model"] ?? config.triageModel;
+  const triageComplete = String(triageModel ?? "").startsWith("typesafe/") ? createJevCompleter() : complete;
   let result;
   try {
     if (stage === "triage") {
@@ -196,7 +201,7 @@ async function runStage(stage) {
         log(`${items.length} sessions: run a pilot of ten or fewer first, read it, then pass --full.`);
         process.exit(1);
       }
-      result = await triage(items, { product: config.product, complete, model: config.triageModel, maxUsd, dryRun, prices: config.prices });
+      result = await triage(items, { product: config.product, complete: triageComplete, model: triageModel, maxUsd, dryRun, prices: config.prices });
     } else {
       const triaged = readJson(join(out, "triage.json"), []);
       const keep = args.all ? null : new Set(triaged.filter((t) => t.ok && t.value.worth_analysis).map((t) => t.id));

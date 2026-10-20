@@ -31,7 +31,8 @@ There are no dependencies. Node 22.18 or newer.
 | `lib/score.mjs` | the hard filters and the deterministic score. **Pure** |
 | `lib/review.mjs` | prompts, schemas, cost estimate, budget guard, triage, analysis, report. Pure apart from the injected `complete` |
 | `lib/posthog.mjs` | **the only file that talks to PostHog**. Read only. Injected `fetch` |
-| `lib/llm.mjs` | **the only file that talks to a model**. Injected `fetch` |
+| `lib/llm.mjs` | **the only file that talks to a chat model**. Injected `fetch` |
+| `lib/jev.mjs` | **the only file that talks to a decision model** (triage only). Injected `fetch` |
 | `bin/replays.mjs` | the CLI: `candidates`, `timelines`, `triage`, `analyze`, `player` |
 | `demo/player.html` | the template `replays player` fills, to look at one session |
 | `examples/replays.config.example.json` | a config for an invented product |
@@ -54,8 +55,8 @@ node bin/replays.mjs analyze --dry-run     # free
    model answers with line numbers, `renderReport` pulls the text back. Never
    let a model write a quote, an id, a count or a URL into the report. A cited
    line that does not exist is flagged (`invalidLines`), never trusted.
-2. **Two files talk to the outside world**, `lib/posthog.mjs` and
-   `lib/llm.mjs`, and both take `fetch` as an argument. No `process.env`, no
+2. **Three files talk to the outside world**, `lib/posthog.mjs`,
+   `lib/llm.mjs` and `lib/jev.mjs`, and all take `fetch` as an argument. No `process.env`, no
    socket and no log anywhere else in `lib/`.
 3. **Every paid step has `--dry-run` and `--max-usd`.** The guard uses the upper
    bound (no flex discount) and refuses before the first call. Results are

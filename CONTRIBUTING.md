@@ -39,9 +39,9 @@ text field reported as a dead button. If you change what it writes, add the
 events to `test/fixtures.mjs` and the expected line to `test/rrweb.test.mjs`.
 Invent the events; never paste a real recording.
 
-**The purity boundary holds.** `lib/posthog.mjs` and `lib/llm.mjs` are the only
-files that read a key or open a socket, and both take their transport as an
-argument. A change that reads `process.env` elsewhere in `lib/` makes the
+**The purity boundary holds.** `lib/posthog.mjs`, `lib/llm.mjs` and
+`lib/jev.mjs` are the only files that read a key or open a socket, and all take
+their transport as an argument. A change that reads `process.env` elsewhere in `lib/` makes the
 library harder to embed and the tests harder to trust.
 
 **Code produces the facts, the model judges.** Line numbers in, line numbers

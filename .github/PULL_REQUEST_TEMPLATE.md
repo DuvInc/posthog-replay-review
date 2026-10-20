@@ -12,6 +12,6 @@
 - [ ] Commits are signed off (`git commit -s`); see CONTRIBUTING.md
 - [ ] If `lib/rrweb.mjs` changed: a case in `test/fixtures.mjs` and `test/rrweb.test.mjs` shows the new line
 - [ ] If a prompt, a schema or a default model changed: the model is named, with sessions, cost and what changed in the report
-- [ ] `lib/` is still pure outside `lib/posthog.mjs` and `lib/llm.mjs`: no env var, no socket, no log
+- [ ] `lib/` is still pure outside `lib/posthog.mjs`, `lib/llm.mjs` and `lib/jev.mjs`: no env var, no socket, no log
 - [ ] No new dependency, or it was discussed in an issue first
 - [ ] No real recording, timeline, key or customer name is in this diff

@@ -45,7 +45,9 @@ description: Review a product's PostHog session replays to find why people leave
    node bin/replays.mjs triage --max-usd 0.01
    ```
    Skip it when the hard filters already did the cut: behind good filters it kept
-   25 of 25 in one run.
+   25 of 25 in one run. A decision model can do this step instead of a chat
+   model (`"triageModel": "typesafe/jev-1.13"`): a probability per session, no
+   key lines.
 4. **Analysis (paid).** Same rule.
    ```bash
    node bin/replays.mjs analyze --dry-run          # add --all to skip triage

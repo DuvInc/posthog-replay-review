@@ -15,5 +15,7 @@
   "goals": ["checkout_completed", "document_indexed"],
   "goalWeight": -2,
   "consoleErrorWeight": 2,
-  "eventProperties": ["plan", "trigger", "credits_needed", "credits_balance"]
+  "eventProperties": ["plan", "trigger", "credits_needed", "credits_balance"],
+  "triageModel": "inception/mercury-2.5",
+  "analysisModel": "openai/gpt-6-luna"
 }
