@@ -17,5 +17,6 @@
   "consoleErrorWeight": 2,
   "eventProperties": ["plan", "trigger", "credits_needed", "credits_balance"],
   "triageModel": "typesafe/jev-1.13",
+  "triageThreshold": 0.5,
   "analysisModel": "openai/gpt-6-luna"
 }

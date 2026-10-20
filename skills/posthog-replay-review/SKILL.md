@@ -48,7 +48,9 @@ description: Review a product's PostHog session replays to find why people leave
    lines, $0.0009 for 10 sessions on a pilot. Another decision model works by
    changing `triageModel`, such as `inception/mercury-decide` (best sort and
    cheapest on the same pilot; `:free` for a no-cost test). A chat model with a
-   strict schema (`inception/mercury-2.5`) also names key lines.
+   strict schema (`inception/mercury-2.5`) also names key lines. Probability
+   scales differ between models: after switching, set `triageThreshold` from a
+   pilot instead of keeping 0.5.
    Skip the step when the hard filters already did the cut: behind good filters
    the chat triage kept 25 of 25 in one run.
 4. **Analysis (paid).** Same rule.

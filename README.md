@@ -149,6 +149,12 @@ On this sample Mercury Decide sorted best and costs least; jev, the default,
 keeps a little more. Ten sessions is a pilot, not a benchmark: run
 `triage --dry-run` and a pilot of ten on your own sessions before choosing.
 
+**One threshold per model.** Decision models do not share a probability scale,
+so 0.5 on jev and 0.5 on Mercury Decide are not the same cut. A session is kept
+at 0.5 by default; if you switch models, look at the probabilities of a pilot
+and set `"triageThreshold"` in the config to the value that keeps the sessions
+you would have wanted to read.
+
 ## Try it locally
 
 ```bash

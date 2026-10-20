@@ -195,7 +195,9 @@ async function runStage(stage) {
   // "inception/mercury-decide" uses the same endpoint, and a chat model goes
   // through lib/llm.mjs. Analysis always needs a chat model.
   const triageModel = args["triage-model"] ?? config.triageModel ?? REVIEW_DEFAULTS.triageModel;
-  const triageComplete = isDecisionModel(triageModel) ? createDecisionCompleter() : complete;
+  const triageComplete = isDecisionModel(triageModel)
+    ? createDecisionCompleter({ threshold: config.triageThreshold })
+    : complete;
   let result;
   try {
     if (stage === "triage") {
