@@ -12,7 +12,7 @@ something the person never did, and a report that turns it into a fix.
 A library and a CLI that turn PostHog session replays into findings.
 
 ```text
-recordings ──▶ hard filters ──▶ rrweb digest ──▶ numbered timeline ──▶ triage (fast model) ──▶ analysis (cheap model) ──▶ report with exact quotes
+recordings ──▶ hard filters ──▶ rrweb digest ──▶ numbered timeline ──▶ triage (decision model) ──▶ analysis (cheap model) ──▶ report with exact quotes
    PostHog      free, code      free, code        free, redacted         paid, --max-usd         paid, --max-usd          code pulls lines by number
 ```
 
@@ -32,7 +32,7 @@ There are no dependencies. Node 22.18 or newer.
 | `lib/review.mjs` | prompts, schemas, cost estimate, budget guard, triage, analysis, report. Pure apart from the injected `complete` |
 | `lib/posthog.mjs` | **the only file that talks to PostHog**. Read only. Injected `fetch` |
 | `lib/llm.mjs` | **the only file that talks to a chat model**. Injected `fetch` |
-| `lib/jev.mjs` | **the only file that talks to a decision model** (triage only). Injected `fetch` |
+| `lib/decide.mjs` | **the only file that talks to a decision model** (jev, Mercury Decide; triage only). Injected `fetch` |
 | `bin/replays.mjs` | the CLI: `candidates`, `timelines`, `triage`, `analyze`, `player` |
 | `demo/player.html` | the template `replays player` fills, to look at one session |
 | `examples/replays.config.example.json` | a config for an invented product |
@@ -56,7 +56,7 @@ node bin/replays.mjs analyze --dry-run     # free
    let a model write a quote, an id, a count or a URL into the report. A cited
    line that does not exist is flagged (`invalidLines`), never trusted.
 2. **Three files talk to the outside world**, `lib/posthog.mjs`,
-   `lib/llm.mjs` and `lib/jev.mjs`, and all take `fetch` as an argument. No `process.env`, no
+   `lib/llm.mjs` and `lib/decide.mjs`, and all take `fetch` as an argument. No `process.env`, no
    socket and no log anywhere else in `lib/`.
 3. **Every paid step has `--dry-run` and `--max-usd`.** The guard uses the upper
    bound (no flex discount) and refuses before the first call. Results are
@@ -71,7 +71,9 @@ node bin/replays.mjs analyze --dry-run     # free
    changing nothing is normal; flagging it buried real dead buttons under noise.
 7. **PostHog is read in ranges of 20 blobs** and its 429 waits are honoured.
    One request per blob hit the 1,200-an-hour cap with 16 to 27 minute waits.
-8. **Strict schemas for triage.** Some providers (Inception Mercury) reject any
+8. **Triage defaults to a decision model** (`lib/decide.mjs`, jev 1.13; Mercury Decide on the same endpoint). A chat
+   model can take its place through `lib/llm.mjs`, with a strict schema:
+   some providers (Inception Mercury) reject any
    `strict: false` schema with an error inside an HTTP 200. Strict needs
    `additionalProperties: false` and every key in `required`.
 9. **A rule in a prompt comes from a run that got it wrong.** `ANALYSIS_RULES`

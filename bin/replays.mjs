@@ -17,10 +17,12 @@ import {
   analyze,
   buildTimeline,
   createCompleter,
-  createJevCompleter,
+  createDecisionCompleter,
+  isDecisionModel,
   createPostHogClient,
   decodeSnapshots,
   renderReport,
+  REVIEW_DEFAULTS,
   scoreRecordings,
   triage,
 } from "../lib/index.mjs";
@@ -189,10 +191,11 @@ async function runStage(stage) {
   const maxUsd = args["max-usd"] !== undefined ? Number(args["max-usd"]) : undefined;
   const dryRun = Boolean(args["dry-run"]);
   const complete = createCompleter();
-  // A decision model for triage: `"triageModel": "typesafe/jev-1.13"` in the
-  // config, or --triage-model. Analysis always needs a chat model.
-  const triageModel = args["triage-model"] ?? config.triageModel;
-  const triageComplete = String(triageModel ?? "").startsWith("typesafe/") ? createJevCompleter() : complete;
+  // Triage defaults to a decision model (jev); another decision model such as
+  // "inception/mercury-decide" uses the same endpoint, and a chat model goes
+  // through lib/llm.mjs. Analysis always needs a chat model.
+  const triageModel = args["triage-model"] ?? config.triageModel ?? REVIEW_DEFAULTS.triageModel;
+  const triageComplete = isDecisionModel(triageModel) ? createDecisionCompleter() : complete;
   let result;
   try {
     if (stage === "triage") {

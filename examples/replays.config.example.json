@@ -16,6 +16,6 @@
   "goalWeight": -2,
   "consoleErrorWeight": 2,
   "eventProperties": ["plan", "trigger", "credits_needed", "credits_balance"],
-  "triageModel": "inception/mercury-2.5",
+  "triageModel": "typesafe/jev-1.13",
   "analysisModel": "openai/gpt-6-luna"
 }

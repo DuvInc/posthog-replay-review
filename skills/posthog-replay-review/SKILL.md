@@ -1,6 +1,6 @@
 ---
 name: posthog-replay-review
-description: Review a product's PostHog session replays to find why people leave, where they get stuck and what to fix - hard filters, readable timelines rebuilt from rrweb in code, a fast-model triage, a cheap-model analysis and a report whose quotes come from the timelines. Use when asked to look at replays, explain what a user did, find friction in onboarding or at a paywall, or review a week of sessions. Not for aggregate funnels or traffic numbers. Spends money on the two model steps: dry run and a stated budget first.
+description: Review a product's PostHog session replays to find why people leave, where they get stuck and what to fix - hard filters, readable timelines rebuilt from rrweb in code, a decision-model triage, a cheap-model analysis and a report whose quotes come from the timelines. Use when asked to look at replays, explain what a user did, find friction in onboarding or at a paywall, or review a week of sessions. Not for aggregate funnels or traffic numbers. Spends money on the two model steps: dry run and a stated budget first.
 ---
 
 # Review PostHog session replays
@@ -44,11 +44,13 @@ description: Review a product's PostHog session replays to find why people leave
    node bin/replays.mjs triage --dry-run
    node bin/replays.mjs triage --max-usd 0.01
    ```
-   Skip it when the hard filters already did the cut: behind good filters it kept
-   25 of 25 in one run. A decision model can do this step instead of a chat
-   model (`"triageModel": "typesafe/jev-1.13"`): a probability per session, no
-   key lines. On a 10-session pilot it cost $0.0009, agreed with Mercury on 8,
-   and kept two that Mercury had called smooth, one with a real i18n friction.
+   The default is a decision model, jev 1.13: a probability per session, no key
+   lines, $0.0009 for 10 sessions on a pilot. Another decision model works by
+   changing `triageModel`, such as `inception/mercury-decide` (best sort and
+   cheapest on the same pilot; `:free` for a no-cost test). A chat model with a
+   strict schema (`inception/mercury-2.5`) also names key lines.
+   Skip the step when the hard filters already did the cut: behind good filters
+   the chat triage kept 25 of 25 in one run.
 4. **Analysis (paid).** Same rule.
    ```bash
    node bin/replays.mjs analyze --dry-run          # add --all to skip triage
@@ -75,7 +77,8 @@ description: Review a product's PostHog session replays to find why people leave
 ## What it costs, measured
 
 On 136 sessions of a file-translation SaaS over 14 days (2026-10-19): triage
-with `inception/mercury-2.5` $0.013, analysis with `openai/gpt-6-luna` on the flex
+with `inception/mercury-2.5` $0.013 (jev, the default since, cost $0.0009 for
+10 on a pilot), analysis with `openai/gpt-6-luna` on the flex
 tier $0.026, about $0.0003 per session. The time goes to downloads, not models.
 
 ## Checklist

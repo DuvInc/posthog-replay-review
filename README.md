@@ -33,8 +33,8 @@ thousands separators in four languages. Three fixes shipped the same day.
 
 ```text
 recordings ──▶ hard filters ──▶ rrweb digest ──▶ numbered timeline ──▶ triage ──▶ analysis ──▶ report
-  PostHog     your events,     DOM rebuilt in   redacted, one       fast model   cheap model   quotes pulled
-              weights, URL     code, no browser line per moment     (optional)   (flex tier)   back by number
+  PostHog     your events,     DOM rebuilt in   redacted, one       decision     cheap model   quotes pulled
+              weights, URL     code, no browser line per moment     model (opt.) (flex tier)   back by number
 ```
 
 A session replay is not a video. It is a DOM snapshot followed by a stream of
@@ -99,7 +99,7 @@ gives one key for every model below:
    (a dollar is plenty to start): the key cannot spend past it whatever runs.
 2. Add a few dollars of credit at https://openrouter.ai/settings/credits.
 3. Put it in `.env` as `OPENROUTER_API_KEY`. The key is read at call time by
-   `lib/llm.mjs` and `lib/jev.mjs` only.
+   `lib/llm.mjs` and `lib/decide.mjs` only.
 4. Run every paid step with `--dry-run` first, then with `--max-usd`.
 
 Any other OpenAI-compatible gateway works too (`LLM_BASE_URL`, `LLM_API_KEY`),
@@ -112,39 +112,42 @@ Set them in `replays.config.json` (`triageModel`, `analysisModel`) or with
 
 | Step | Default | What it is | Alternatives |
 | :--- | :--- | :--- | :--- |
-| Triage: is this session worth a look? | `inception/mercury-2.5` | a fast diffusion chat model, strict JSON schema, picks the key lines | **a decision model**: `typesafe/jev-1.13` |
+| Triage: is this session worth a look? | `typesafe/jev-1.13` | a decision model: typed yes/no questions, a probability back, one call per session | another decision model such as `inception/mercury-decide`, or a chat model with a JSON schema |
 | Analysis: what happened, what to fix | `openai/gpt-6-luna` on the flex tier | a cheap chat model, half price on flex | any chat model that takes a JSON schema |
 
-**Triage is a decision, so you can give it to a decision model.** Instead of a
-chat model writing JSON, a decision model like TypeSafe's jev, served through
-OpenRouter's decisions endpoint, answers typed yes/no questions with a
-probability, in one call. `lib/jev.mjs` sends each timeline as the state and
-asks six of them: worth a closer look, and one per category (blocked by price,
-UX friction, bug, confusion, unexpected use). A session is kept above 0.5.
+**Triage is a decision, so a decision model does it.** A decision model answers
+typed yes/no questions with a probability read from the model, instead of a
+yes/no a chat model wrote. `lib/decide.mjs` sends each timeline as the state, on
+OpenRouter's decisions endpoint, and asks six questions: worth a closer look,
+and one per category (blocked by price, UX friction, bug, confusion, unexpected
+use). A session is kept above 0.5, and you get a number to sort by.
+
+The default is TypeSafe's jev. **Any other decision model on the same endpoint
+works by changing one value**, for example Inception's Mercury Decide, which
+also has a free, rate-limited variant for pilots:
 
 ```json
-{ "triageModel": "typesafe/jev-1.13" }
+{ "triageModel": "inception/mercury-decide" }
 ```
 
-What you gain is a probability you can threshold and sort by, instead of a
-yes/no a chat model chose. What you lose is the key lines: a decision model
-cites nothing, so the analysis gets no hint of where to look (it does not need
-one).
+A chat model with a strict JSON schema (`inception/mercury-2.5`, through
+`lib/llm.mjs`) works too, and is the only kind that also names the key lines of
+each session.
 
-Measured on 10 sessions that Mercury had already triaged (2026-10-20):
+Measured on the same 10 sessions (2026-10-20):
 
-| | Mercury (chat) | jev 1.13 (decision) |
-| :--- | :--- | :--- |
-| Cost for 10 sessions | ~$0.0010 | $0.0009 |
-| Time for 10, five at a time | | 1.5 s |
-| Kept the 6 Mercury kept | 6 | 6 |
-| Dropped the 2 with too little activity | 2 | 2 (worth 0.15 and 0.34) |
-| The 2 Mercury called "smooth" | dropped | kept (worth 0.65 and 0.72) |
+| | jev 1.13 (default) | Mercury Decide | Mercury 2.5 (chat) |
+| :--- | :--- | :--- | :--- |
+| Cost for 10 sessions | $0.0009 | free variant used; ~$0.0003 at the listed $0.02 per 1M input | ~$0.0010, at an 80% promotional discount |
+| Time for 10, five at a time | 1.5 s | 1.6 s | |
+| The 6 sessions with clear frictions | kept (0.63 to 0.93) | kept (0.85 to 1.00) | kept |
+| A real i18n friction (English in a German interface) | kept (0.72) | kept (0.73) | dropped |
+| A likely false positive (the person's own instruction in another language) | kept (0.65) | dropped (0.08) | dropped |
+| 2 sessions with too little activity | dropped | dropped | dropped |
 
-On those last two, the analysis had found English copy in a German interface in
-one, and a possible language mix-up in the other: on this sample, the decision
-model was at least as good a filter. Ten sessions is a pilot, not a benchmark:
-run your own `triage --dry-run` and a pilot of ten before choosing.
+On this sample Mercury Decide sorted best and costs least; jev, the default,
+keeps a little more. Ten sessions is a pilot, not a benchmark: run
+`triage --dry-run` and a pilot of ten on your own sessions before choosing.
 
 ## Try it locally
 
@@ -204,7 +207,7 @@ const markdown = renderReport(results, [timeline]);
 
 ## What it costs, measured
 
-| Run (2026-10-19) | Sessions | Triage (`inception/mercury-2.5`) | Analysis (`openai/gpt-6-luna`, flex) |
+| Run (2026-10-19, before jev was the default) | Sessions | Triage (`inception/mercury-2.5`) | Analysis (`openai/gpt-6-luna`, flex) |
 | :--- | ---: | ---: | ---: |
 | First pilot | 4 | $0.0008 | $0.0013 |
 | Highest-scored first | 27 | $0.0024 | $0.0072 |

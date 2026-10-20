@@ -18,7 +18,7 @@ text version of them to a model. The surface that matters:
 - **Key handling.** Anything that causes `POSTHOG_API_KEY` or
   `OPENROUTER_API_KEY` to be written to a tracked file, printed, or sent
   anywhere other than the configured host. `lib/posthog.mjs`, `lib/llm.mjs`
-  and `lib/jev.mjs` are the only files that should read them.
+  and `lib/decide.mjs` are the only files that should read them.
 - **What leaves the machine.** Only the numbered timeline text goes to the
   model: no raw recording, no screenshot, no event properties beyond the ones
   named in `eventProperties`. Inputs arrive masked by the recorder, and

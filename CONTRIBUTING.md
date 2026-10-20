@@ -40,7 +40,7 @@ events to `test/fixtures.mjs` and the expected line to `test/rrweb.test.mjs`.
 Invent the events; never paste a real recording.
 
 **The purity boundary holds.** `lib/posthog.mjs`, `lib/llm.mjs` and
-`lib/jev.mjs` are the only files that read a key or open a socket, and all take
+`lib/decide.mjs` are the only files that read a key or open a socket, and all take
 their transport as an argument. A change that reads `process.env` elsewhere in `lib/` makes the
 library harder to embed and the tests harder to trust.
 

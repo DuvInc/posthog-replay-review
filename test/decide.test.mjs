@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 
-import { createJevCompleter } from "../lib/jev.mjs";
+import { createDecisionCompleter as createJevCompleter, isDecisionModel } from "../lib/decide.mjs";
 import { analyze, triage } from "../lib/review.mjs";
 import { buildTimeline } from "../lib/timeline.mjs";
 import { recording } from "./fixtures.mjs";
@@ -51,5 +51,17 @@ describe("decision model triage", () => {
   test("the dry run prices it like the other models", async () => {
     const r = await triage([timeline()], { product: "A SaaS.", dryRun: true, model: "typesafe/jev-1.13", complete: async () => ({}) });
     assert.ok(r.cost.estimate > 0 && Number.isFinite(r.cost.estimate));
+  });
+
+  test("recognises decision models by id, and passes other decision models through", async () => {
+    assert.ok(isDecisionModel("typesafe/jev-1.13"));
+    assert.ok(isDecisionModel("inception/mercury-decide"));
+    assert.ok(isDecisionModel("inception/mercury-decide:free"));
+    assert.ok(!isDecisionModel("inception/mercury-2.5"));
+    assert.ok(!isDecisionModel("openai/gpt-6-luna"));
+    let model;
+    const complete = createJevCompleter({ apiKey: "k", fetch: async (_u, init) => ((model = JSON.parse(init.body).model), reply({ worth: { noul: 0.9 } })) });
+    await triage([timeline()], { product: "A SaaS.", complete, model: "inception/mercury-decide:free" });
+    assert.equal(model, "inception/mercury-decide:free");
   });
 });
