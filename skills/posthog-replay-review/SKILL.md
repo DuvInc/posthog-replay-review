@@ -76,6 +76,26 @@ description: Review a product's PostHog session replays to find why people leave
    and severity, say how many sessions each one rests on. Two sessions is a
    signal, not a statistic: say so.
 
+## Reading across sessions without fooling yourself
+
+Learned following one product's funnel for two days. A review tells you what
+happened in a handful of sessions; these keep the conclusions honest.
+
+- **Read a journey, not a session.** One person can have several sessions across
+  the marketing site and the app. Group by person before saying "left at the
+  paywall" or "never signed up".
+- **Count people, not events or sessions.** A rage-clicking person is one signal.
+- **Replays only exist for people who accepted cookies.** Say so next to every
+  number, and cross-check with server-side events, which see everyone.
+- **Trust what your own code sent over the `Referer`.** Browsers trim it to the
+  origin; a field your site writes (the page a file was dropped on) does not lie.
+- **The same click several times is a dead button**, even without an error. A
+  redirect that takes seconds is not an outage: look at the next line before
+  reporting it.
+- **Exclude your own sessions** (staff, test accounts, the day you shipped) before
+  counting, and date every friction against the code history: half of last week's
+  list may already be fixed.
+
 ## What it costs, measured
 
 On 136 sessions of a file-translation SaaS over 14 days (2026-10-19): triage
