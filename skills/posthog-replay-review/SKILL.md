@@ -20,7 +20,10 @@ description: Review a product's PostHog session replays to find why people leave
   (`LLM_BASE_URL`, `LLM_API_KEY`) whose models accept a JSON schema.
 - A `replays.config.json` copied from `examples/`: one or two sentences on the
   product and how it charges (the models read it), the app's URL pattern, and the
-  product events that mark a decision, with weights.
+  product events that mark a decision, with weights. Add `notes`: what you know
+  that a timeline cannot say (which dialog is an upsell and which is the paywall,
+  what the free sample really is). **Check the product sentence against the real
+  screens**: a wrong number in it came back as a confident, wrong "copy mismatch".
 - Output goes to `replays-out/`. It contains personal data: keep it local.
 
 ## Workflow
@@ -110,3 +113,4 @@ tier $0.026, about $0.0003 per session. The time goes to downloads, not models.
 - [ ] Dry run shown, cost stated, explicit yes received, `--max-usd` set
 - [ ] Measured cost and failures reported after each paid step
 - [ ] Every friction checked against its timeline and against the current code
+- [ ] The product sentence and `notes` checked against the live screens

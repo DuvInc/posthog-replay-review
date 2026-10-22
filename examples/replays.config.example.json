@@ -1,6 +1,10 @@
 {
   "product": "Acme Docs: a SaaS that turns uploaded PDFs into searchable knowledge bases. Free plan: 3 documents. Paid: a monthly plan, or one-time credit packs.",
   "startUrlMatch": "^https://app\\.acme-docs\\.example",
+  "notes": [
+    "A dialog opened by tapping a locked feature (trigger=feature_locked) is an upsell, not the paywall on the person's file.",
+    "The free sample is the first 3,000 words of a first file, once; it is offered in the dialog shown when a run costs more than the balance."
+  ],
   "days": 7,
   "minActiveSeconds": 15,
   "signals": {

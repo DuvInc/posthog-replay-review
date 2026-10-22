@@ -215,7 +215,7 @@ async function runStage(stage) {
         log("Nothing to analyse: run `replays triage`, or pass --all.");
         process.exit(1);
       }
-      result = await analyze(items, { product: config.product, complete, triage: triaged, model: config.analysisModel, maxUsd, dryRun, prices: config.prices });
+      result = await analyze(items, { product: config.product, notes: config.notes ?? [], complete, triage: triaged, model: config.analysisModel, maxUsd, dryRun, prices: config.prices });
       if (!dryRun) writeFileSync(join(out, "report.md"), renderReport(result.results, items));
     }
   } catch (error) {

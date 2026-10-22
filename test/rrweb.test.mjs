@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 
-import { decodeSnapshots, digest } from "../lib/rrweb.mjs";
+import { decodeSnapshots, digest, opensOutsidePage } from "../lib/rrweb.mjs";
 import { buildTimeline, linesByNumber } from "../lib/timeline.mjs";
 import { redact } from "../lib/redact.mjs";
 import { recording, posthogJsonl, T0 } from "./fixtures.mjs";
@@ -37,7 +37,7 @@ describe("digest", () => {
   });
 
   test("typing is reported by field and length, never content", () => {
-    assert.ok(lines().includes('type: typed in input "Workspace name" (7 chars, masked)'));
+    assert.ok(lines().includes('type: typed in input "placeholder: Workspace name" (7 chars, masked)'));
     assert.ok(!lines().some((l) => l.includes("*****")));
   });
 
@@ -105,5 +105,18 @@ describe("redact", () => {
 
   test("leaves ordinary numbers alone", () => {
     assert.equal(redact("This translation uses 6,950 credits"), "This translation uses 6,950 credits");
+  });
+});
+
+describe("controls whose effect a recording cannot show", () => {
+  test("file pickers, downloads and copies are recognised, in several languages", () => {
+    for (const label of ['button "Choose another file"', 'button "Start over with another file"', 'button "Download translation"', 'button "Elegir un archivo"', 'a "Télécharger"', 'button "Copy link"']) {
+      assert.equal(opensOutsidePage(label), true, label);
+    }
+  });
+  test("ordinary buttons are not", () => {
+    for (const label of ['button "Create workspace"', 'button "Back to dashboard"', 'button "Translate entire book"']) {
+      assert.equal(opensOutsidePage(label), false, label);
+    }
   });
 });
