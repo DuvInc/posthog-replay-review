@@ -115,6 +115,14 @@ Set them in `replays.config.json` (`triageModel`, `analysisModel`) or with
 | Triage: is this session worth a look? | `typesafe/jev-1.13` | a decision model: typed yes/no questions, a probability back, one call per session | another decision model such as `inception/mercury-decide`, or a chat model with a JSON schema |
 | Analysis: what happened, what to fix | `openai/gpt-6-luna` on the flex tier | a cheap chat model, half price on flex | any chat model that takes a JSON schema |
 
+**Analysis model, measured.** On 13 sessions with the same timelines and prompt
+(2026-10-23, 2.3 cents for the whole comparison), `openai/gpt-6-luna` on the flex
+tier finished all 13 for $0.0029 and matched the checked outcome on 12.
+`deepseek/deepseek-v4.1-flash-1017` finished 13 for $0.0068 (with a 4,000-token
+cap; two answers were cut at 1,800) but matched 5 and noticed more small things.
+`minimax/minimax-m3.1-flash` refuses `reasoning: none`, and 4 of its 13 answers
+were broken JSON. One run each: a signal, not a benchmark.
+
 **Triage is a decision, so a decision model does it.** A decision model answers
 typed yes/no questions with a probability read from the model, instead of a
 yes/no a chat model wrote. `lib/decide.mjs` sends each timeline as the state, on
