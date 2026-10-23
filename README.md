@@ -123,6 +123,13 @@ cap; two answers were cut at 1,800) but matched 5 and noticed more small things.
 `minimax/minimax-m3.1-flash` refuses `reasoning: none`, and 4 of its 13 answers
 were broken JSON. One run each: a signal, not a benchmark.
 
+Broken JSON is fixable, and the tool does it for models that are not OpenAI's: a
+strict schema (every key required, no others), a "JSON object only" line, one
+more sample when an answer does not parse, and a parser that forgives a code
+fence around the object. With that, both finished 13 of 13 (MiniMax $0.0102,
+DeepSeek $0.0064). Quality did not move: they still matched the checked
+outcome on 4 and 6 sessions of 13, against 12 for Luna.
+
 **Triage is a decision, so a decision model does it.** A decision model answers
 typed yes/no questions with a probability read from the model, instead of a
 yes/no a chat model wrote. `lib/decide.mjs` sends each timeline as the state, on

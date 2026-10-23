@@ -1,8 +1,8 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 
-import { analyze, clip, estimateCost, renderReport, triage, TRIAGE_SCHEMA } from "../lib/review.mjs";
-import { createCompleter } from "../lib/llm.mjs";
+import { analyze, clip, estimateCost, renderReport, strictSchema, triage, ANALYSIS_SCHEMA, TRIAGE_SCHEMA } from "../lib/review.mjs";
+import { createCompleter, parseJsonLoose } from "../lib/llm.mjs";
 import { scoreRecordings } from "../lib/score.mjs";
 import { buildTimeline } from "../lib/timeline.mjs";
 import { recording } from "./fixtures.mjs";
@@ -155,5 +155,30 @@ describe("llm transport", () => {
     assert.equal(body.response_format.json_schema.strict, true);
     assert.deepEqual(body.response_format.json_schema.schema, { type: "object" });
     assert.equal(body.provider.require_parameters, true);
+  });
+});
+
+describe("JSON that stays valid", () => {
+  test("strictSchema requires every key and forbids others, at every depth, without touching the original", () => {
+    const strict = strictSchema(ANALYSIS_SCHEMA);
+    assert.deepEqual(strict.required, Object.keys(ANALYSIS_SCHEMA.properties));
+    assert.equal(strict.additionalProperties, false);
+    assert.equal(strict.properties.frictions.items.additionalProperties, false);
+    assert.deepEqual(strict.properties.frictions.items.required, Object.keys(ANALYSIS_SCHEMA.properties.frictions.items.properties));
+    assert.ok(!("additionalProperties" in ANALYSIS_SCHEMA));
+  });
+
+  test("a model that is not OpenAI's gets the strict schema and the JSON-only line by default", async () => {
+    const out = await analyze([timeline()], { product, model: "deepseek/deepseek-v4.1-flash-1017", dryRun: true, complete: async () => ({}) });
+    assert.equal(out.sample.strict, true);
+    assert.match(out.sample.system, /JSON object only/);
+    const luna = await analyze([timeline()], { product, model: "openai/gpt-6-luna", dryRun: true, complete: async () => ({}) });
+    assert.equal(luna.sample.strict, false);
+  });
+
+  test("parseJsonLoose forgives a fence or a sentence around an object, not a cut string", () => {
+    assert.deepEqual(parseJsonLoose('```json\n{"a":1}\n```'), { a: 1 });
+    assert.deepEqual(parseJsonLoose('Here: {"a":[1]} done'), { a: [1] });
+    assert.throws(() => parseJsonLoose('{"a": "cut'));
   });
 });
