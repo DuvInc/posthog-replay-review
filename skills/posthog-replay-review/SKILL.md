@@ -56,7 +56,10 @@ description: Review a product's PostHog session replays to find why people leave
    pilot instead of keeping 0.5.
    Skip the step when the hard filters already did the cut: behind good filters
    the chat triage kept 25 of 25 in one run.
-4. **Analysis (paid).** Same rule.
+4. **Analysis (paid).** Same rule. The default model, Luna, was the most
+   accurate of three measured over five runs (README, "Using another analysis
+   model"); another model works with `--analysis-model <id>`, a strict schema
+   (automatic outside OpenAI) and `reasoning: low` if it refuses `none`.
    ```bash
    node bin/replays.mjs analyze --dry-run          # add --all to skip triage
    node bin/replays.mjs analyze --max-usd 0.05

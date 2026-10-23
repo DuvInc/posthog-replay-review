@@ -115,20 +115,47 @@ Set them in `replays.config.json` (`triageModel`, `analysisModel`) or with
 | Triage: is this session worth a look? | `typesafe/jev-1.13` | a decision model: typed yes/no questions, a probability back, one call per session | another decision model such as `inception/mercury-decide`, or a chat model with a JSON schema |
 | Analysis: what happened, what to fix | `openai/gpt-6-luna` on the flex tier | a cheap chat model, half price on flex | any chat model that takes a JSON schema |
 
-**Analysis model, measured.** On 13 sessions with the same timelines and prompt
-(2026-10-23, 2.3 cents for the whole comparison), `openai/gpt-6-luna` on the flex
-tier finished all 13 for $0.0029 and matched the checked outcome on 12.
-`deepseek/deepseek-v4.1-flash-1017` finished 13 for $0.0068 (with a 4,000-token
-cap; two answers were cut at 1,800) but matched 5 and noticed more small things.
-`minimax/minimax-m3.1-flash` refuses `reasoning: none`, and 4 of its 13 answers
-were broken JSON. One run each: a signal, not a benchmark.
+### Using another analysis model
 
-Broken JSON is fixable, and the tool does it for models that are not OpenAI's: a
-strict schema (every key required, no others), a "JSON object only" line, one
-more sample when an answer does not parse, and a parser that forgives a code
-fence around the object. With that, both finished 13 of 13 (MiniMax $0.0102,
-DeepSeek $0.0064). Quality did not move: they still matched the checked
-outcome on 4 and 6 sessions of 13, against 12 for Luna.
+The default is `openai/gpt-6-luna` on the flex tier, and it was the strongest on
+the one set we measured. Five runs of each model on the same 13 sessions and the
+same prompt, scored against findings checked by hand (2026-10-23, about 8 cents
+for all 15 runs):
+
+| Model | Answers that parse | Session outcome right (of 13) | Frictions per run | Finds the upload bug | Finds the Google bug | Cost per run |
+| :--- | :--- | :--- | :--- | :--- | :--- | ---: |
+| `openai/gpt-6-luna` (flex) | 5 of 5 runs | 11.6 on average (10 to 12) | 6 | 5 of 5 | 5 of 5 | $0.0013 to $0.0029 |
+| `deepseek/deepseek-v4.1-flash-1017` | 5 of 5 | 4.8 (3 to 6) | 21 | 4 of 5 | 5 of 5 | $0.0065 |
+| `minimax/minimax-m3.1-flash` | 5 of 5 | 1.6 (1 to 2) | 24 | 5 of 5 | 4 of 5 | $0.0078 |
+
+The two others find the real bugs too, but they say much more (21 to 24 frictions
+a run against 6, several of them things the person handled without a pause) and
+they get the outcome of the session wrong most of the time. Luna says less and is
+right more often. One product, 13 sessions: run `analyze --dry-run` and a pilot on
+your own before you choose.
+
+What we learned getting other models to work:
+
+- **A loose schema is how JSON breaks.** Without `additionalProperties: false` and
+  every key required, DeepSeek and MiniMax sometimes wrote a string that never
+  ended. With a strict schema both parsed 15 times out of 15. The tool turns it on
+  by default for any model that is not OpenAI's (`analysisStrict` in the config
+  overrides it).
+- **Ask for the object and nothing else.** One line, "Reply with the JSON object
+  only", and the same line about the length of each string.
+- **A bad answer is billed.** When one does not parse, the tool counts its cost,
+  samples once more, and forgives a code fence or a sentence around the object.
+  It never repairs what is inside the braces.
+- **Some models refuse `reasoning: none`.** MiniMax answers HTTP 400 ("Reasoning is
+  mandatory"): use `low`, and leave room for it in `maxTokens` (4,000 worked).
+- **Flex is OpenAI's tier.** Other models pay the list price, so the saving
+  disappears; check the price on the day, they move.
+- **Put a `reasoning` key first in the schema** and cap it at a few hundred
+  characters: the model thinks before it answers even when reasoning is off.
+- **Tell the model what the timeline cannot.** `notes` in the config: which dialog
+  is an upsell and which is the paywall, what the free sample really is. And
+  mark text the person did not type (a placeholder) so it is not read as an answer;
+  the digest does it.
 
 **Triage is a decision, so a decision model does it.** A decision model answers
 typed yes/no questions with a probability read from the model, instead of a
